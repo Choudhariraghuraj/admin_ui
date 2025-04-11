@@ -1,96 +1,93 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Paper,
+  CircularProgress,
+  Link
+} from "@mui/material";
+import { useState } from "react";
+import {  Link as RouterLink, useNavigate } from "react-router-dom";
 import api from "../api";
-import { toast, ToastContainer } from "react-toastify";
-import { motion } from "framer-motion";
-import { FaSpinner } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const Register = () => {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post("/auth/register", form);
-      toast.success("Registration successful!");
-      setTimeout(() => navigate("/login"), 1000);
+      const res = await api.post("/auth/register", { name, email, password });
+      localStorage.setItem("token", res.data.token);
+      toast.success("Account created successfully!");
+      navigate("/");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Registration failed.");
+      toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-indigo-200">
-      <ToastContainer />
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center text-green-600">Register</h2>
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              name="name"
-              type="text"
-              required
-              className="mt-1 w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-green-400"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="John Doe"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              name="email"
-              type="email"
-              required
-              className="mt-1 w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-green-400"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="john@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              name="password"
-              type="password"
-              required
-              className="mt-1 w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-green-400"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-            />
-          </div>
-          <button
+    <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Paper elevation={4} sx={{ p: 4, borderRadius: 2 }}>
+        <Typography variant="h5" gutterBottom align="center">
+          Create New Account
+        </Typography>
+        <Box component="form" onSubmit={handleRegister} sx={{ mt: 2 }}>
+          <TextField
+            label="Name"
+            fullWidth
+            margin="normal"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <TextField
+            label="Email"
+            type="email"
+            fullWidth
+            margin="normal"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Password"
+            type="password"
+            fullWidth
+            margin="normal"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button
             type="submit"
-            className="w-full flex justify-center items-center gap-2 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 2 }}
             disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : null}
           >
-            {loading ? <FaSpinner className="animate-spin" /> : "Register"}
-          </button>
-        </form>
-        <p className="text-sm mt-4 text-center text-gray-500">
-          Already have an account?{" "}
-          <a href="/login" className="text-green-600 hover:underline">
-            Login
-          </a>
-        </p>
-      </motion.div>
-    </div>
+            {loading ? "Registering..." : "Register"}
+          </Button>
+             <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+      Already have an account?{" "}
+      <Link component={RouterLink} to="/login">
+        Login
+      </Link>
+    </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
