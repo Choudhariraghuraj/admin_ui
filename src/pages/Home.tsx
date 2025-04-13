@@ -9,9 +9,9 @@ const data = [
 
 const Home = () => {
   return (
-    <div className="w-full h-full">
-      <h2 className="text-2xl font-bold mb-4">📊 Dashboard Overview</h2>
-      <div className="w-full h-[300px] bg-white p-4 rounded-2xl shadow-md">
+    <div className="w-full h-full p-6 bg-[#181a24]"> {/* Slightly darker background for the Home component */}
+      <h2 className="text-2xl font-semibold mb-6 text-white">📊 Dashboard Overview</h2>
+      <div className="w-full h-[300px] bg-[#242731] p-4 rounded-2xl shadow-lg"> {/* Lighter background for the chart */}
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />

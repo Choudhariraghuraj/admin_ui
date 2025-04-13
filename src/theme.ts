@@ -2,12 +2,18 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
-    mode: "light", // or "dark"
+    mode: 'dark',
     primary: {
-      main: "#1976d2",
+      main: '#1e1e2f', // Custom brand color
+      contrastText: '#ffffff',
     },
     background: {
-      default: "#f4f6f8",
+      default: '#1e1e2f',
+      paper: '#2a2a3d',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: '#cccccc',
     },
   },
   typography: {
@@ -24,8 +30,53 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
           textTransform: 'none',
+          fontWeight: 500,
+        },
+      },
+    },
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#1e1e2f',
+        },
+        'input:-webkit-autofill': {
+          boxShadow: '0 0 0 1000px #2a2a3d inset !important',
+          WebkitTextFillColor: '#ffffff !important',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& label.Mui-focused': {
+            color: '#ffffff',
+          },
+          '& .MuiInputBase-root': {
+            backgroundColor: '#2a2a3d',
+            color: '#ffffff',
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#444',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#666',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#888',
+          },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#2a2a3d',
+          color: '#ffffff',
+          '& input:-webkit-autofill': {
+            boxShadow: '0 0 0 1000px #2a2a3d inset',
+            WebkitTextFillColor: '#ffffff',
+          },
         },
       },
     },
@@ -33,6 +84,18 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           animation: "fadeInUp 0.5s ease",
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: "#90caf9", // light blue for better contrast in dark theme
+          textDecorationColor: "#90caf9",
+          "&:hover": {
+            color: "#bbdefb",
+            textDecoration: "underline",
+          },
         },
       },
     },

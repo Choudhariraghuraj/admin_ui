@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Button, Modal, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Grid } from "@mui/material";
 import API from "../api";
 import { toast } from "react-toastify";
-import ClipLoader from "react-spinners/ClipLoader";
-import { Modal } from "@mui/material";
 
 interface User {
   _id: string;
@@ -21,8 +20,8 @@ const Users = () => {
     name: "",
     email: "",
     password: "",
-    avatar: null as File | null,
     role: "user",
+    avatar: null as File | null,
   });
 
   const fetchUsers = async () => {
@@ -92,145 +91,159 @@ const Users = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full px-6 py-6 bg-[#2c2c3e] min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">👥 User Management</h1>
-        <button
+        <h1 className="text-2xl font-bold text-white">👥 User Management</h1>
+        <Button
+          variant="contained"
+          color="primary"
           onClick={() => {
             setEditUser(null);
             setFormData({ name: "", email: "", password: "", role: "user", avatar: null });
             setModalOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
           ➕ Add User
-        </button>
+        </Button>
       </div>
 
       {loading ? (
         <div className="flex justify-center items-center h-32">
-          <ClipLoader color="#2563EB" />
+          <CircularProgress color="primary" />
         </div>
       ) : (
-        <div className="overflow-auto bg-white shadow rounded-2xl">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-[#1e1e2f] text-white text-sm">
-                <th className="p-4">Name</th>
-                <th className="p-4">Email</th>
-                <th className="p-4">Role</th>
-                <th className="p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <TableContainer className="bg-[#1e1e2f] rounded-xl shadow-md overflow-auto">
+          <Table>
+            <TableHead>
+              <TableRow className="bg-[#1e1e2f] text-white text-sm">
+                <TableCell className="text-white">Name</TableCell>
+                <TableCell className="text-white">Email</TableCell>
+                <TableCell className="text-white">Role</TableCell>
+                <TableCell className="text-white">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {users?.map((user) => (
-                <tr key={user._id} className="border-b hover:bg-gray-50 transition">
-                  <td className="p-4">{user.name}</td>
-                  <td className="p-4">{user.email}</td>
-                  <td className="p-4">{user.role}</td>
-                  <td className="p-4 space-x-2">
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="text-white hover:underline"
-                    >
+                <TableRow key={user._id} className="border-b hover:bg-[#2c2c3e] transition">
+                  <TableCell className="text-white">{user.name}</TableCell>
+                  <TableCell className="text-white">{user.email}</TableCell>
+                  <TableCell className="text-white">{user.role}</TableCell>
+                  <TableCell>
+                    <Button onClick={() => handleEdit(user)} color="secondary" variant="text">
                       ✏️ Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user._id)}
-                      className="text-red-500 hover:underline"
-                    >
+                    </Button>
+                    <Button onClick={() => handleDelete(user._id)} color="error" variant="text">
                       🗑 Delete
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
               {users?.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="text-center text-gray-500 p-4">
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-gray-500 p-4">
                     No users found.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
 
-      {/* Modal without animation */}
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+      {/* Modal */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+  <div className="flex justify-center items-center min-h-screen">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-[#1e1e2f] p-6 rounded-xl w-full max-w-md shadow-xl space-y-6"  // Increased space-y-6 for better gap
+    >
+      <Grid container gap={2}>
+        <Grid size={12}>
+        <h2 className="text-lg font-semibold text-white mb-2">{editUser ? "Edit User" : "Add User"}</h2>
+        </Grid>
+        <Grid size={12}>
+        <TextField
+        label="Name"
+        fullWidth
+        variant="outlined"
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        required
+        className="bg-[#2c2c3e] text-white"
+      />
+        </Grid>
+        <Grid size={12}>
+        <TextField
+        label="Email"
+        type="email"
+        fullWidth
+        variant="outlined"
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        required
+        className="bg-[#2c2c3e] text-white"
+      />
+        </Grid>
+        <Grid size={12}>
+        {!editUser && (
+        <TextField
+          label="Password"
+          type="password"
+          fullWidth
+          variant="outlined"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          required
+          className="bg-[#2c2c3e] text-white"
+        />
+      )}
+        </Grid>
+        <Grid size={12}>
+        <TextField
+        select
+        label="Role"
+        fullWidth
+        variant="outlined"
+        value={formData.role}
+        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+        className="bg-[#2c2c3e] text-white"
       >
-        <div className="flex justify-center items-center min-h-screen">
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl space-y-4"
-          >
-            <h2 className="text-lg font-semibold">{editUser ? "Edit User" : "Add User"}</h2>
-            <input
-              type="text"
-              placeholder="Name"
-              className="w-full border p-2 rounded"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full border p-2 rounded"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
-            {!editUser && (
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full border p-2 rounded"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-              />
-            )}
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </TextField>
+        </Grid>
+        <Grid size={12}>
+        <TextField
+        type="file"
+        fullWidth
+        variant="outlined"
+        onChange={(e) => {
+          const file = (e.target as HTMLInputElement).files?.[0]; // Typecast e.target to HTMLInputElement
+          setFormData({ ...formData, avatar: file ?? null });
+        }}
+        className="bg-[#2c2c3e] text-white"
+      />
+        </Grid>
+        <Grid size={12}>
+        <Grid container gap={2} justifyContent="end">
+        <Button
+          type="button"
+          onClick={() => setModalOpen(false)}
+          variant="outlined"
+          color="error"
+        >
+          Cancel
+        </Button>
+        <Button type="submit" variant="contained" color="primary">
+          {editUser ? "Update" : "Create"}
+        </Button>
+      </Grid>
+        </Grid>
+      </Grid>
+    </form>
+  </div>
+</Modal>
 
-            {/* Role Selection */}
-            <div className="w-full">
-              <label className="block text-sm mb-2">Role</label>
-              <select
-                className="w-full border p-2 rounded"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <input
-              type="file"
-              className="w-full border p-2 rounded"
-              onChange={(e) => setFormData({ ...formData, avatar: e.target.files ? e.target.files[0] : null })}
-            />
-
-            <div className="flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={() => setModalOpen(false)}
-                className="px-4 py-2 text-red rounded cancel-button"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-white rounded"
-              >
-                {editUser ? "Update" : "Create"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </Modal>
     </div>
   );
 };

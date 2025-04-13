@@ -6,18 +6,20 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  Link
+  Link,
 } from "@mui/material";
 import { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import api from "../api"; // assuming your axios instance is here
 import { toast } from "react-toastify";
+import api from "../api";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth(); // Get login method
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +27,7 @@ const Login = () => {
     try {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
+      login(res.data.token, res.data.user); // Store token + user
       toast.success("Logged in successfully!");
       navigate("/dashboard");
     } catch (err: any) {
@@ -35,47 +38,58 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={4} sx={{ p: 4, borderRadius: 2 }}>
-        <Typography variant="h5" gutterBottom align="center">
+    <Container maxWidth="sm" className="mt-20">
+      <Paper elevation={6} className="bg-[#1e1e2f] text-white p-6 rounded-2xl shadow-lg">
+        <Typography variant="h5" align="center" fontWeight={600}>
           Login to Your Account
         </Typography>
-        <Box component="form" onSubmit={handleLogin} sx={{ mt: 2 }}>
+
+        <Box component="form" onSubmit={handleLogin} className="mt-6 flex flex-col gap-5">
           <TextField
             label="Email"
             type="email"
             fullWidth
-            margin="normal"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            InputLabelProps={{ style: { color: "#ccc" } }}
+            InputProps={{ style: { color: "#fff" } }}
           />
+
           <TextField
             label="Password"
             type="password"
             fullWidth
-            margin="normal"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            InputLabelProps={{ style: { color: "#ccc" } }}
+            InputProps={{ style: { color: "#fff" } }}
           />
+
           <Button
             type="submit"
             variant="contained"
+            color="primary"
             fullWidth
-            sx={{ mt: 2 }}
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} /> : null}
+            className="!py-3 font-bold text-white"
+            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
           >
             {loading ? "Logging in..." : "Login"}
           </Button>
-          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-  Don't have an account?{" "}
-  <Link component={RouterLink} to="/register">
-    Register
-  </Link>
-</Typography>
 
+          <Typography variant="body2" align="center" className="text-gray-400 mt-2">
+            Don’t have an account?{" "}
+            <Link
+              component={RouterLink}
+              to="/register"
+              underline="hover"
+              className="text-blue-400 hover:text-blue-300 font-medium"
+            >
+              Register
+            </Link>
+          </Typography>
         </Box>
       </Paper>
     </Container>
