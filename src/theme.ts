@@ -2,11 +2,12 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
+    mode: "light", // or "dark"
     primary: {
-      main: "#3f51b5", // Deep blue
+      main: "#1976d2",
     },
-    secondary: {
-      main: "#f50057", // Pinkish
+    background: {
+      default: "#f4f6f8",
     },
   },
   typography: {
@@ -20,6 +21,14 @@ const theme = createTheme({
     borderRadius: 10,
   },
   components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+        },
+      },
+    },
     MuiPaper: {
       styleOverrides: {
         root: {

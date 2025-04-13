@@ -1,35 +1,88 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import {
+  Box,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import {
+  Home,
+  People,
+  Settings,
+  Logout
+} from "@mui/icons-material";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const Sidebar = () => {
+const navItems = [
+  { label: "Home", icon: <Home />, path: "/dashboard" },
+  { label: "Users", icon: <People />, path: "/users" },
+  { label: "Settings", icon: <Settings />, path: "/settings" },
+];
+
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ open, onClose }: SidebarProps) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    if (isMobile) onClose();
   };
 
-  const linkStyle =
-    "block px-4 py-3 text-gray-700 hover:bg-gray-200 rounded transition";
-
   return (
-    <aside className="w-full max-w-[220px] min-h-screen bg-white shadow-md p-4">
-      <h2 className="text-xl font-bold mb-6">Admin Dashboard</h2>
+    <Drawer
+      anchor="left"
+      open={open}
+      onClose={onClose}
+      variant={isMobile ? "temporary" : "persistent"}
+      sx={{
+        "& .MuiDrawer-paper": {
+          width: 240,
+          backgroundColor: "#1e1e2f",
+          color: "#fff",
+        },
+      }}
+    >
+      <Box sx={{ mt: 10 }}>
+        <List>
+          {navItems.map((item) => (
+            <ListItemButton
+              key={item.label}
+              onClick={() => handleNavigate(item.path)}
+              selected={location.pathname === item.path}
+              sx={{
+                "&.Mui-selected": {
+                  backgroundColor: "#4c4c70",
+                  borderRadius: 2,
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: "inherit" }}>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.label} />
+            </ListItemButton>
+          ))}
 
-      <nav className="flex flex-col gap-2">
-        <Link to="/" className={linkStyle}>🏠 Home</Link>
-        <Link to="/users" className={linkStyle}>👥 Users</Link>
-        <Link to="/settings" className={linkStyle}>⚙️ Settings</Link>
-        <button
-          onClick={handleLogout}
-          className="mt-6 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-        >
-          🚪 Logout
-        </button>
-      </nav>
-    </aside>
+          <ListItemButton
+            onClick={() => {
+              localStorage.removeItem("token");
+              navigate("/login");
+            }}
+            sx={{ mt: "auto", color: "#f44336" }}
+          >
+            <ListItemIcon sx={{ color: "inherit" }}><Logout /></ListItemIcon>
+            <ListItemText primary="Logout" />
+          </ListItemButton>
+        </List>
+      </Box>
+    </Drawer>
   );
-};
-
-export default Sidebar;
+}

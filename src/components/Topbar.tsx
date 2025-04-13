@@ -1,19 +1,21 @@
-import { Menu } from "lucide-react";
+import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 
 interface TopbarProps {
-  toggleSidebar: () => void;
+  onMenuClick: () => void;
 }
 
-export const Topbar = ({ toggleSidebar }: TopbarProps) => {
+export default function Topbar({ onMenuClick }: TopbarProps) {
   return (
-    <header className="h-16 bg-white shadow-md flex items-center justify-between px-4 md:ml-64">
-      <button className="md:hidden" onClick={toggleSidebar}>
-        <Menu size={24} />
-      </button>
-      <h1 className="text-lg font-semibold">Dashboard</h1>
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-gray-300" />
-      </div>
-    </header>
+    <AppBar position="fixed" sx={{ backgroundColor: "#1e1e2f", zIndex: 1201 }}>
+      <Toolbar>
+        <IconButton color="inherit" edge="start" onClick={onMenuClick}>
+          <MenuIcon />
+        </IconButton>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          Admin Dashboard
+        </Typography>
+      </Toolbar>
+    </AppBar>
   );
-};
+}

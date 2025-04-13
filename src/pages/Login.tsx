@@ -26,7 +26,7 @@ const Login = () => {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
       toast.success("Logged in successfully!");
-      navigate("/");
+      navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {
@@ -62,7 +62,6 @@ const Login = () => {
           <Button
             type="submit"
             variant="contained"
-            color="primary"
             fullWidth
             sx={{ mt: 2 }}
             disabled={loading}
