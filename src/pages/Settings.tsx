@@ -36,7 +36,7 @@ const Settings: React.FC = () => {
       try {
         const { data } = await api.get("/users/me");
         reset(data);
-        setPreview(data.avatarUrl ? import.meta.env.VITE_API_BASE_URL + data.avatarUrl : null);
+        setPreview(data.avatar ? import.meta.env.VITE_API_BASE_URL + data.avatar : null);
       } catch (err: any) {
         toast.error("Failed to load profile");
       } finally {

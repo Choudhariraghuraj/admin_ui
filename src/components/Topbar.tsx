@@ -38,13 +38,13 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             </Box>
             <Avatar
               alt={user.name}
-              src={user.avatarUrl}
+              src={user.avatar}
               sx={{
-                bgcolor: user.avatarUrl ? "transparent" : "#3f3f5f",
+                bgcolor: user.avatar ? "transparent" : "#3f3f5f",
                 color: "#fff",
               }}
             >
-              {!user.avatarUrl && getInitial(user.name)}
+              {!user.avatar && getInitial(user.name)}
             </Avatar>
           </Box>
         )}

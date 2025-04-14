@@ -1,19 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Grid } from "@mui/material";
-import API from "../api";
+import {
+  Avatar,
+  Button,
+  CircularProgress,
+  Grid,
+  Modal,
+  MenuItem,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+} from "@mui/material";
 import { toast } from "react-toastify";
+import API from "../api";
 
 interface User {
   _id: string;
   name: string;
   email: string;
-  avatarUrl: string;
+  avatar: string;
   role: string;
 }
 
 const Users = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
@@ -29,7 +44,7 @@ const Users = () => {
     try {
       const res = await API.get("/users");
       setUsers(res.data.users);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load users");
     } finally {
       setLoading(false);
@@ -46,7 +61,7 @@ const Users = () => {
       await API.delete(`/users/${id}`);
       toast.success("User deleted");
       fetchUsers();
-    } catch (err) {
+    } catch {
       toast.error("Delete failed");
     }
   };
@@ -65,7 +80,6 @@ const Users = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const formDataToSend = new FormData();
     formDataToSend.append("name", formData.name);
     formDataToSend.append("email", formData.email);
@@ -85,10 +99,12 @@ const Users = () => {
       setEditUser(null);
       setFormData({ name: "", email: "", password: "", role: "user", avatar: null });
       fetchUsers();
-    } catch (err) {
+    } catch {
       toast.error("Save failed");
     }
   };
+
+  const getAvatarUrl = (filename: string) => `${import.meta.env.VITE_API_BASE_URL}/uploads/${filename}`;
 
   return (
     <div className="w-full px-6 py-6 bg-[#2c2c3e] min-h-screen">
@@ -125,9 +141,20 @@ const Users = () => {
             <TableBody>
               {users?.map((user) => (
                 <TableRow key={user._id} className="border-b hover:bg-[#2c2c3e] transition">
-                  <TableCell className="text-white">{user.name}</TableCell>
+                  <TableCell className="text-white">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        src={user.avatar ? getAvatarUrl(user.avatar) : ""}
+                        alt={user.name}
+                        sx={{ width: 32, height: 32, bgcolor: "#3f3f5f" }}
+                      >
+                        {!user.avatar && user.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                      {user.name}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-white">{user.email}</TableCell>
-                  <TableCell className="text-white">{user.role}</TableCell>
+                  <TableCell className="text-white capitalize">{user.role}</TableCell>
                   <TableCell>
                     <Button onClick={() => handleEdit(user)} color="secondary" variant="text">
                       ✏️ Edit
@@ -138,7 +165,7 @@ const Users = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {users?.length === 0 && (
+              {users.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-gray-500 p-4">
                     No users found.
@@ -152,98 +179,96 @@ const Users = () => {
 
       {/* Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-  <div className="flex justify-center items-center min-h-screen">
-    <form
-      onSubmit={handleSubmit}
-      className="bg-[#1e1e2f] p-6 rounded-xl w-full max-w-md shadow-xl space-y-6"  // Increased space-y-6 for better gap
-    >
-      <Grid container gap={2}>
-        <Grid size={12}>
-        <h2 className="text-lg font-semibold text-white mb-2">{editUser ? "Edit User" : "Add User"}</h2>
-        </Grid>
-        <Grid size={12}>
-        <TextField
-        label="Name"
-        fullWidth
-        variant="outlined"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        required
-        className="bg-[#2c2c3e] text-white"
-      />
-        </Grid>
-        <Grid size={12}>
-        <TextField
-        label="Email"
-        type="email"
-        fullWidth
-        variant="outlined"
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        required
-        className="bg-[#2c2c3e] text-white"
-      />
-        </Grid>
-        <Grid size={12}>
-        {!editUser && (
-        <TextField
-          label="Password"
-          type="password"
-          fullWidth
-          variant="outlined"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          required
-          className="bg-[#2c2c3e] text-white"
-        />
-      )}
-        </Grid>
-        <Grid size={12}>
-        <TextField
-        select
-        label="Role"
-        fullWidth
-        variant="outlined"
-        value={formData.role}
-        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-        className="bg-[#2c2c3e] text-white"
-      >
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-      </TextField>
-        </Grid>
-        <Grid size={12}>
-        <TextField
-        type="file"
-        fullWidth
-        variant="outlined"
-        onChange={(e) => {
-          const file = (e.target as HTMLInputElement).files?.[0]; // Typecast e.target to HTMLInputElement
-          setFormData({ ...formData, avatar: file ?? null });
-        }}
-        className="bg-[#2c2c3e] text-white"
-      />
-        </Grid>
-        <Grid size={12}>
-        <Grid container gap={2} justifyContent="end">
-        <Button
-          type="button"
-          onClick={() => setModalOpen(false)}
-          variant="outlined"
-          color="error"
-        >
-          Cancel
-        </Button>
-        <Button type="submit" variant="contained" color="primary">
-          {editUser ? "Update" : "Create"}
-        </Button>
-      </Grid>
-        </Grid>
-      </Grid>
-    </form>
-  </div>
-</Modal>
+        <div className="flex justify-center items-center min-h-screen">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-[#1e1e2f] p-6 rounded-xl w-full max-w-md shadow-xl"
+          >
+            <Grid container spacing={2}>
+              <Grid size={12}>
+                <h2 className="text-lg font-semibold text-white">
+                  {editUser ? "Edit User" : "Add User"}
+                </h2>
+              </Grid>
 
+              <Grid size={12}>
+                <TextField
+                  label="Name"
+                  fullWidth
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  InputProps={{ style: { color: "#fff" } }}
+                  InputLabelProps={{ style: { color: "#ccc" } }}
+                />
+              </Grid>
+
+              <Grid size={12}>
+                <TextField
+                  label="Email"
+                  type="email"
+                  fullWidth
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  InputProps={{ style: { color: "#fff" } }}
+                  InputLabelProps={{ style: { color: "#ccc" } }}
+                />
+              </Grid>
+
+              {!editUser && (
+                <Grid size={12}>
+                  <TextField
+                    label="Password"
+                    type="password"
+                    fullWidth
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    InputProps={{ style: { color: "#fff" } }}
+                    InputLabelProps={{ style: { color: "#ccc" } }}
+                  />
+                </Grid>
+              )}
+
+              <Grid size={12}>
+                <Select
+                  fullWidth
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value as string })
+                  }
+                  displayEmpty
+                  variant="outlined"
+                  sx={{ color: "#fff", bgcolor: "#2c2c3e" }}
+                >
+                  <MenuItem value="user">User</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
+                </Select>
+              </Grid>
+
+              <Grid size={12}>
+                <TextField
+                  type="file"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ accept: "image/*" }}
+                  onChange={(e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    setFormData({ ...formData, avatar: file ?? null });
+                  }}
+                />
+              </Grid>
+
+              <Grid size={12} className="flex justify-end gap-4">
+                <Button variant="outlined" color="error" onClick={() => setModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="contained" color="primary">
+                  {editUser ? "Update" : "Create"}
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+        </div>
+      </Modal>
     </div>
   );
 };
