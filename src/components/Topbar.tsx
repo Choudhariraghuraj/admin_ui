@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useAuth } from "../context/AuthContext";
+import { getAvatarUrl } from "../utils/avatarUrl";
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -38,7 +39,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             </Box>
             <Avatar
               alt={user.name}
-              src={user.avatar}
+              src={user.avatar ? getAvatarUrl(user.avatar) : ""}
               sx={{
                 bgcolor: user.avatar ? "transparent" : "#3f3f5f",
                 color: "#fff",

@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import API from "../api";
+import { getAvatarUrl } from "../utils/avatarUrl";
 
 interface User {
   _id: string;
@@ -103,8 +104,6 @@ const Users = () => {
       toast.error("Save failed");
     }
   };
-
-  const getAvatarUrl = (filename: string) => `${import.meta.env.VITE_API_BASE_URL}/uploads/${filename}`;
 
   return (
     <div className="w-full px-6 py-6 bg-[#2c2c3e] min-h-screen">
