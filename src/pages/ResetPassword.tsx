@@ -10,14 +10,16 @@ import {
     IconButton,
   } from "@mui/material";
   import { useState } from "react";
-  import { useNavigate, useParams } from "react-router-dom";
+  import { useNavigate, useSearchParams } from "react-router-dom";
   import { Visibility, VisibilityOff } from "@mui/icons-material";
   import { toast } from "react-toastify";
   import api from "../api";
   
   const ResetPassword = () => {
-    const { token } = useParams();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const token = searchParams.get("token");
+  
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +31,11 @@ import {
   
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
+  
+      if (!token) {
+        toast.error("Invalid or missing reset token.");
+        return;
+      }
   
       if (!isStrongPassword(password)) {
         toast.error("Password must be 8+ chars, include uppercase, lowercase, number, and symbol.");
