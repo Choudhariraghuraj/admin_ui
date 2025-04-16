@@ -4,6 +4,17 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import api from "../api";
 import Spinner from "../components/Spinner";
+import {
+  TextField,
+  Button,
+  InputAdornment,
+  IconButton,
+  Paper,
+  Grid,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useAuth } from "../context/AuthContext";
+import { getAvatarUrl } from "../utils/avatarUrl";
 
 interface ProfileForm {
   name: string;
@@ -14,37 +25,29 @@ interface ProfileForm {
 }
 
 const Settings: React.FC = () => {
-  const [loading, setLoading] = useState(true);
+  const { user, updateUser } = useAuth();
   const [submitting, setSubmitting] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(
+    user?.avatar ? getAvatarUrl(user.avatar) : null
+  );
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setNewShowPassword] = useState(false);
 
   const { register, handleSubmit, reset, watch } = useForm<ProfileForm>();
-
   const avatarWatch = watch("avatar");
 
-  // Preview avatar
+  useEffect(() => {
+    if (user) {
+      reset({ name: user.name, email: user.email });
+    }
+  }, [user, reset]);
+
   useEffect(() => {
     if (avatarWatch && avatarWatch[0]) {
       const file = avatarWatch[0];
       setPreview(URL.createObjectURL(file));
     }
   }, [avatarWatch]);
-
-  // Fetch user profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data } = await api.get("/users/me");
-        reset(data);
-        setPreview(data.avatar ? import.meta.env.VITE_API_BASE_URL + data.avatar : null);
-      } catch (err: any) {
-        toast.error("Failed to load profile");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, [reset]);
 
   const onSubmit = async (formData: ProfileForm) => {
     const fd = new FormData();
@@ -58,8 +61,13 @@ const Settings: React.FC = () => {
 
     try {
       setSubmitting(true);
-      await api.put("/users/me", fd);
+      const response = await api.put("/users/me", fd);
       toast.success("Profile updated!");
+
+      // Update user data in context after successful update
+      if (response.data) {
+        updateUser(response.data); // Update user in context
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Update failed");
     } finally {
@@ -67,60 +75,129 @@ const Settings: React.FC = () => {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (!user) return <Spinner />;
 
   return (
     <motion.div
-      className="p-6 max-w-2xl mx-auto w-full animate-fade-in"
+      className="p-6 mx-auto w-full animate-fade-in"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <h1 className="text-2xl font-semibold mb-4">Profile Settings</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Name</label>
-          <input {...register("name")} className="input" />
-        </div>
+      <Paper className="bg-[#1e1e2f] p-6 text-white rounded-xl shadow-md">
+        <h1 className="text-2xl font-semibold mb-4 text-white">Profile Settings</h1>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <Grid container spacing={2}>
+            <Grid size={12}>
+              <TextField
+                label="Name"
+                fullWidth
+                {...register("name")}
+                InputLabelProps={{ style: { color: "#ccc" } }}
+                InputProps={{ style: { color: "#fff" } }}
+              />
+            </Grid>
 
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input {...register("email")} type="email" className="input" />
-        </div>
+            <Grid size={12}>
+              <TextField
+                label="Email"
+                type="email"
+                fullWidth
+                {...register("email")}
+                InputLabelProps={{ style: { color: "#ccc" } }}
+                InputProps={{ style: { color: "#fff" } }}
+              />
+            </Grid>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium">Current Password</label>
-            <input {...register("currentPassword")} type="password" className="input" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">New Password</label>
-            <input {...register("newPassword")} type="password" className="input" />
-          </div>
-        </div>
+            <Grid size={6}>
+              <TextField
+                label="Current Password"
+                type={showCurrentPassword ? "text" : "password"}
+                fullWidth
+                {...register("currentPassword")}
+                InputLabelProps={{ style: { color: "#ccc" } }}
+                InputProps={{
+                  style: { color: "#fff" },
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                        {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
 
-        <div>
-          <label className="block text-sm font-medium">Avatar</label>
-          <input {...register("avatar")} type="file" accept="image/*" />
-        </div>
+            <Grid size={6}>
+              <TextField
+                label="New Password"
+                type={showNewPassword ? "text" : "password"}
+                fullWidth
+                {...register("newPassword")}
+                InputLabelProps={{ style: { color: "#ccc" } }}
+                InputProps={{
+                  style: { color: "#fff" },
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setNewShowPassword(!showNewPassword)}>
+                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
 
-        {preview && (
-          <div className="mt-4">
-            <img
-              src={preview}
-              alt="Avatar Preview"
-              className="w-24 h-24 object-cover rounded-full border"
-            />
-          </div>
-        )}
+            <Grid size={12}>
+              <TextField
+                type="file"
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ accept: "image/*" }}
+                {...register("avatar")}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setPreview(URL.createObjectURL(file));
+                  }
+                }}
+                InputProps={{
+                  classes: {
+                    root: "bg-[#1e1e2f]",
+                    input:
+                      "text-white file:text-white file:bg-[#2c2c3d] file:border-0 file:rounded file:mr-2 file:py-1 file:px-3",
+                  },
+                }}
+              />
+            </Grid>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          disabled={submitting}
-        >
-          {submitting ? "Saving..." : "Save Changes"}
-        </button>
-      </form>
+            {preview && (
+              <Grid size={12}>
+                <div className="mt-3">
+                  <img
+                    src={preview}
+                    alt="Avatar Preview"
+                    className="w-24 h-24 rounded-full border border-white object-cover"
+                  />
+                </div>
+              </Grid>
+            )}
+
+            <Grid size={12}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={submitting}
+                className="!bg-[#1e1e2f] !text-white hover:!bg-[#2a2a3d] transition-colors font-medium py-3"
+              >
+                {submitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </Grid>
+          </Grid>
+        </form>
+      </Paper>
     </motion.div>
   );
 };

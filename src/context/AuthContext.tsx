@@ -13,6 +13,7 @@ interface AuthContextProps {
   token: string | null;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (updatedUser: User) => void; // New method to update user in context
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -45,8 +46,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  // Method to update the user data in context
+  const updateUser = (updatedUser: User) => {
+    localStorage.setItem("user", JSON.stringify(updatedUser)); // Update localStorage
+    setUser(updatedUser); // Update state
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

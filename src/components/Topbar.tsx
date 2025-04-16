@@ -45,7 +45,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                 color: "#fff",
               }}
             >
-              {!user.avatar && getInitial(user.name)}
+              {!user.avatar && getInitial(user?.name ?? "")}
             </Avatar>
           </Box>
         )}
