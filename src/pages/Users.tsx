@@ -18,6 +18,7 @@ import {
 import { toast } from "react-toastify";
 import API from "../api";
 import { getAvatarUrl } from "../utils/avatarUrl";
+import { useAuth } from "../context/AuthContext";
 
 interface User {
   _id: string;
@@ -28,6 +29,9 @@ interface User {
 }
 
 const Users = () => {
+  const { user } = useAuth(); // Get current logged-in user
+  const isAdmin = user?.role === "admin"; // Check role
+  
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -109,7 +113,7 @@ const Users = () => {
     <div className="w-full px-6 py-6 bg-[#2c2c3e] min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">👥 User Management</h1>
-        <Button
+        {isAdmin && ( <Button
           variant="contained"
           color="primary"
           onClick={() => {
@@ -119,7 +123,7 @@ const Users = () => {
           }}
         >
           ➕ Add User
-        </Button>
+        </Button> )}
       </div>
 
       {loading ? (
@@ -155,12 +159,17 @@ const Users = () => {
                   <TableCell className="text-white">{user.email}</TableCell>
                   <TableCell className="text-white capitalize">{user.role}</TableCell>
                   <TableCell>
-                    <Button onClick={() => handleEdit(user)} color="secondary" variant="text">
+                  {isAdmin ? (
+                <> <Button onClick={() => handleEdit(user)} color="secondary" variant="text">
                       ✏️ Edit
                     </Button>
                     <Button onClick={() => handleDelete(user._id)} color="error" variant="text">
                       🗑 Delete
                     </Button>
+                    </>
+                     ) : (
+                      <span className="text-gray-400 italic">Restricted</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

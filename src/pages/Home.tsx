@@ -1,35 +1,19 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import {
-  Paper,
-  Typography,
-  Grid,
-  Avatar,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-} from "@mui/material";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import Spinner from "../components/Spinner";
+import { toast } from "react-toastify";
+import { Paper, Grid, Typography, Avatar, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-interface DashboardData {
+interface OverviewData {
   totalUsers: number;
-  totalAdmins: number;
-  usersToday: number;
-  userStats: { date: string; count: number }[];
-  recentUsers: {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    createdAt: string;
-  }[];
+  adminUsers: number;
+  normalUsers: number;
+  recentUsers: any[];
+  currentUser: { role: string; name: string; email: string; avatar?: string };
 }
 
-const Dashboard: React.FC = () => {
-  const [data, setData] = useState<DashboardData | null>(null);
+const Home: React.FC = () => {
+  const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,101 +21,135 @@ const Dashboard: React.FC = () => {
       try {
         const res = await api.get("/dashboard/overview");
         setData(res.data);
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed to fetch dashboard data");
       } finally {
         setLoading(false);
       }
     };
+
     fetchOverview();
   }, []);
 
-  if (loading || !data) return <Spinner />;
+  if (loading || !data) return <p className="text-white p-6">Loading dashboard...</p>;
+
+  const isAdmin = data.currentUser.role === "admin";
+
+  const chartData = [
+    { name: "Admins", value: data.adminUsers },
+    { name: "Users", value: data.normalUsers },
+  ];
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Stat Cards */}
-      <Grid container spacing={3}>
-        {[
-          { title: "Total Users", value: data.totalUsers },
-          { title: "Total Admins", value: data.totalAdmins },
-          { title: "Today's Signups", value: data.usersToday },
-        ].map((stat, idx) => (
-          <Grid size={12} key={idx}>
-            <Paper className="bg-[#1e1e2f] p-4 text-white rounded-lg shadow">
-              <Typography variant="h6">{stat.title}</Typography>
-              <Typography variant="h4" className="mt-2 font-bold">
-                {stat.value}
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+    <div className="p-6 text-white w-full">
+      <Typography variant="h4" className="mb-6 font-semibold text-white">
+        Welcome, {data.currentUser.name}
+      </Typography>
 
-      {/* Area Chart */}
-      <Paper className="bg-[#1e1e2f] p-6 rounded-lg shadow text-white">
-        <Typography variant="h6" gutterBottom>
-          User Growth
-        </Typography>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={data.userStats}>
-            <defs>
-              <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="date" stroke="#ccc" />
-            <YAxis stroke="#ccc" />
-            <Tooltip />
-            <Area
-              type="monotone"
-              dataKey="count"
-              stroke="#8884d8"
-              fillOpacity={1}
-              fill="url(#colorUv)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </Paper>
+      <Grid container spacing={3} className="pt-6">
+        {isAdmin ? (
+          <>
+            {/* Admin View */}
+            <Grid size={12}>
+              <Paper className="bg-[#1e1e2f] p-4">
+                <Typography variant="h6" className="text-white">Total Users</Typography>
+                <Typography variant="h4" className="text-blue-400">{data.totalUsers}</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={12}>
+              <Paper className="bg-[#1e1e2f] p-4">
+                <Typography variant="h6" className="text-white">Admins</Typography>
+                <Typography variant="h4" className="text-green-400">{data.adminUsers}</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={12}>
+              <Paper className="bg-[#1e1e2f] p-4">
+                <Typography variant="h6" className="text-white">Normal Users</Typography>
+                <Typography variant="h4" className="text-yellow-400">{data.normalUsers}</Typography>
+              </Paper>
+            </Grid>
 
-      {/* Recent Users Table */}
-      <Paper className="bg-[#1e1e2f] p-6 rounded-lg shadow text-white">
-        <Typography variant="h6" gutterBottom>
-          Recent Users
-        </Typography>
-        <Table className="text-white">
-          <TableHead>
-            <TableRow>
-              <TableCell className="text-white">Avatar</TableCell>
-              <TableCell className="text-white">Name</TableCell>
-              <TableCell className="text-white">Email</TableCell>
-              <TableCell className="text-white">Joined</TableCell>
+            <Grid size={12}>
+              <Paper className="bg-[#1e1e2f] p-4 h-64">
+                <Typography variant="h6" className="mb-3 text-white">User Role Chart</Typography>
+                <ResponsiveContainer width="100%" height="90%">
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="name" stroke="#ccc" />
+                    <YAxis stroke="#ccc" />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#8884d8" radius={[5, 5, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Paper>
+            </Grid>
+
+            <Grid size={12}>
+  <Paper className="bg-[#1e1e2f] p-4">
+    <Typography variant="h6" className="mb-3 text-white">Recent Users</Typography>
+    <TableContainer>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell className="text-white">Avatar</TableCell>
+            <TableCell className="text-white">Name</TableCell>
+            <TableCell className="text-white">Email</TableCell>
+            <TableCell className="text-white">Role</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.recentUsers.map((u) => (
+            <TableRow key={u._id}>
+              <TableCell>
+                <Avatar
+                  src={
+                    u.avatar
+                      ? import.meta.env.VITE_API_BASE_URL + u.avatar
+                      : "/default-avatar.png"
+                  }
+                  alt={u.name}
+                  sx={{ width: 32, height: 32 }}
+                />
+              </TableCell>
+              <TableCell className="text-white">{u.name}</TableCell>
+              <TableCell className="text-white">{u.email}</TableCell>
+              <TableCell className="text-white capitalize">{u.role}</TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.recentUsers.map((user) => (
-              <TableRow key={user._id}>
-                <TableCell>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </Paper>
+</Grid>
+          </>
+        ) : (
+          <>
+            {/* User View */}
+            <Grid size={12}>
+              <Paper className="bg-[#1e1e2f] p-4">
+                <Typography variant="h6" className="mb-3 text-white">Your Profile Overview</Typography>
+                <div className="flex items-center gap-4">
                   <Avatar
                     src={
-                      user.avatar
-                        ? import.meta.env.VITE_API_BASE_URL + user.avatar
-                        : undefined
+                      data.currentUser.avatar
+                        ? import.meta.env.VITE_API_BASE_URL + data.currentUser.avatar
+                        : "/default-avatar.png"
                     }
-                    alt={user.name}
+                    alt={data.currentUser.name}
+                    sx={{ width: 60, height: 60 }}
                   />
-                </TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+                  <div>
+                    <Typography className="text-white text-lg">{data.currentUser.name}</Typography>
+                    <Typography className="text-sm text-gray-400">{data.currentUser.email}</Typography>
+                    <Typography className="text-sm text-green-400">Role: {data.currentUser.role}</Typography>
+                  </div>
+                </div>
+              </Paper>
+            </Grid>
+          </>
+        )}
+      </Grid>
     </div>
   );
 };
 
-export default Dashboard;
+export default Home;
