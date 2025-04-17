@@ -14,6 +14,7 @@ import {
   import { Visibility, VisibilityOff } from "@mui/icons-material";
   import { toast } from "react-toastify";
   import api from "../api";
+  import { useTheme } from "@mui/material/styles";
   
   const ResetPassword = () => {
     const [searchParams] = useSearchParams();
@@ -24,6 +25,8 @@ import {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+  
+    const theme = useTheme(); // Access the current theme
   
     const isStrongPassword = (pwd: string): boolean => {
       return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(pwd);
@@ -61,12 +64,26 @@ import {
   
     return (
       <Container maxWidth="sm" className="mt-20">
-        <Paper elevation={6} className="bg-[#1e1e2f] text-white p-6 rounded-2xl shadow-lg">
-          <Typography variant="h5" align="center" fontWeight={600}>
+        <Paper
+          elevation={6}
+          sx={{
+            backgroundColor: theme.palette.background.paper, // Dynamic background color based on theme
+            color: theme.palette.text.primary, // Dynamic text color based on theme
+            p: 6,
+            borderRadius: "16px",
+            boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          <Typography
+            variant="h5"
+            align="center"
+            fontWeight={600}
+            sx={{ color: theme.palette.text.primary }} // Dynamic header color
+          >
             Reset Your Password
           </Typography>
   
-          <Box component="form" onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 6, display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="New Password"
               type={showPassword ? "text" : "password"}
@@ -74,9 +91,11 @@ import {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              InputLabelProps={{ style: { color: "#ccc" } }}
+              InputLabelProps={{
+                sx: { color: theme.palette.text.secondary }, // Dynamic label color
+              }}
               InputProps={{
-                style: { color: "#fff" },
+                sx: { color: theme.palette.text.primary }, // Dynamic input text color
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
@@ -94,9 +113,11 @@ import {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              InputLabelProps={{ style: { color: "#ccc" } }}
+              InputLabelProps={{
+                sx: { color: theme.palette.text.secondary }, // Dynamic label color
+              }}
               InputProps={{
-                style: { color: "#fff" },
+                sx: { color: theme.palette.text.primary }, // Dynamic input text color
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
@@ -113,7 +134,12 @@ import {
               color="primary"
               fullWidth
               disabled={loading}
-              className="!py-3 font-bold text-white"
+              sx={{
+                py: 2, // Padding vertical
+                fontWeight: "bold",
+                color: theme.palette.primary.contrastText, // Dynamic button text color
+                backgroundColor: theme.palette.primary.main, // Dynamic background color
+              }}
               startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
             >
               {loading ? "Resetting..." : "Reset Password"}

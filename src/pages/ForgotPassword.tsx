@@ -12,8 +12,10 @@ import {
   import { toast } from "react-toastify";
   import api from "../api";
   import { Link as RouterLink } from "react-router-dom";
+  import { useTheme } from "@mui/material/styles";
   
   const ForgotPassword = () => {
+    const theme = useTheme(); // Access the current theme
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
   
@@ -34,15 +36,28 @@ import {
   
     return (
       <Container maxWidth="sm" className="mt-20">
-        <Paper elevation={6} className="bg-[#1e1e2f] text-white p-6 rounded-2xl shadow-lg">
-          <Typography variant="h5" align="center" fontWeight={600}>
+        <Paper
+          elevation={6}
+          className="p-6 rounded-2xl shadow-lg"
+          sx={{
+            backgroundColor: theme.palette.background.paper, // Dynamically apply background color
+            color: theme.palette.text.primary, // Dynamically apply text color
+          }}
+        >
+          <Typography
+            variant="h5"
+            align="center"
+            fontWeight={600}
+            sx={{ color: theme.palette.text.primary }} // Dynamic color for header
+          >
             Forgot Password?
           </Typography>
   
           <Typography
             variant="body2"
             align="center"
-            className="text-gray-400 mt-1 mb-4"
+            className="mt-1 mb-4"
+            sx={{ color: theme.palette.text.secondary }} // Dynamic color for description text
           >
             Enter your email and we’ll send you a link to reset your password.
           </Typography>
@@ -55,8 +70,12 @@ import {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              InputLabelProps={{ style: { color: "#ccc" } }}
-              InputProps={{ style: { color: "#fff" } }}
+              InputLabelProps={{
+                style: { color: theme.palette.text.secondary }, // Dynamic color for input label
+              }}
+              InputProps={{
+                style: { color: theme.palette.text.primary }, // Dynamic color for input text
+              }}
             />
   
             <Button
@@ -65,8 +84,12 @@ import {
               color="primary"
               fullWidth
               disabled={loading}
-              className="!py-3 font-bold text-white"
+              className="!py-3 font-bold"
               startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+              sx={{
+                backgroundColor: theme.palette.primary.main, // Dynamic button background color
+                color: theme.palette.primary.contrastText, // Dynamic button text color
+              }}
             >
               {loading ? "Sending..." : "Send Reset Link"}
             </Button>
@@ -75,7 +98,15 @@ import {
           <Typography
             variant="body2"
             align="center"
-            className="text-blue-400 hover:text-blue-300 mt-6"
+            sx={{
+              color: theme.palette.primary.main, // Dynamic color for the link
+              cursor: "pointer",
+              transition: "color 0.3s",
+              "&:hover": {
+                color: theme.palette.primary.dark, // Hover effect color
+              },
+            }}
+            className="mt-6"
           >
             <Link
               component={RouterLink}

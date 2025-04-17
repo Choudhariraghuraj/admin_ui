@@ -1,6 +1,6 @@
 // src/components/CustomModal.tsx
 import React from "react";
-import { Modal } from "@mui/material";
+import { Modal, useTheme, Box } from "@mui/material";
 
 interface CustomModalProps {
   open: boolean;
@@ -9,13 +9,21 @@ interface CustomModalProps {
 }
 
 const CustomModal: React.FC<CustomModalProps> = ({ open, onClose, children }) => {
+  const theme = useTheme();
+
   return (
     <Modal open={open} onClose={onClose}>
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg mx-auto mt-24">
+      <Box className="flex justify-center items-center min-h-screen">
+        <Box
+        className="rounded-lg shadow-lg p-6 w-full max-w-lg mx-auto mt-24"
+          sx={{
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary
+          }}
+        >
           {children}
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 };

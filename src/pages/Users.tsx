@@ -14,6 +14,8 @@ import {
   TableHead,
   TableRow,
   TextField,
+  useTheme,
+  Paper,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import API from "../api";
@@ -29,9 +31,10 @@ interface User {
 }
 
 const Users = () => {
-  const { user } = useAuth(); // Get current logged-in user
-  const isAdmin = user?.role === "admin"; // Check role
-  
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const theme = useTheme();
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -110,20 +113,29 @@ const Users = () => {
   };
 
   return (
-    <div className="w-full px-6 py-6 bg-[#2c2c3e] min-h-screen">
+    <div
+      style={{
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.text.primary,
+        minHeight: "100vh",
+        padding: "24px",
+      }}
+    >
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">👥 User Management</h1>
-        {isAdmin && ( <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            setEditUser(null);
-            setFormData({ name: "", email: "", password: "", role: "user", avatar: null });
-            setModalOpen(true);
-          }}
-        >
-          ➕ Add User
-        </Button> )}
+        <h1 className="text-2xl font-bold">👥 User Management</h1>
+        {isAdmin && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setEditUser(null);
+              setFormData({ name: "", email: "", password: "", role: "user", avatar: null });
+              setModalOpen(true);
+            }}
+          >
+            ➕ Add User
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -131,51 +143,51 @@ const Users = () => {
           <CircularProgress color="primary" />
         </div>
       ) : (
-        <TableContainer className="bg-[#1e1e2f] rounded-xl shadow-md overflow-auto">
+        <TableContainer component={Paper} elevation={4}>
           <Table>
             <TableHead>
-              <TableRow className="bg-[#1e1e2f] text-white text-sm">
-                <TableCell className="text-white">Name</TableCell>
-                <TableCell className="text-white">Email</TableCell>
-                <TableCell className="text-white">Role</TableCell>
-                <TableCell className="text-white">Actions</TableCell>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users?.map((user) => (
-                <TableRow key={user._id} className="border-b hover:bg-[#2c2c3e] transition">
-                  <TableCell className="text-white">
+              {users.map((user) => (
+                <TableRow key={user._id} hover>
+                  <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar
                         src={user.avatar ? getAvatarUrl(user.avatar) : ""}
                         alt={user.name}
-                        sx={{ width: 32, height: 32, bgcolor: "#3f3f5f" }}
                       >
                         {!user.avatar && user.name.charAt(0).toUpperCase()}
                       </Avatar>
                       {user.name}
                     </div>
                   </TableCell>
-                  <TableCell className="text-white">{user.email}</TableCell>
-                  <TableCell className="text-white capitalize">{user.role}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell className="capitalize">{user.role}</TableCell>
                   <TableCell>
-                  {isAdmin ? (
-                <> <Button onClick={() => handleEdit(user)} color="secondary" variant="text">
-                      ✏️ Edit
-                    </Button>
-                    <Button onClick={() => handleDelete(user._id)} color="error" variant="text">
-                      🗑 Delete
-                    </Button>
-                    </>
-                     ) : (
-                      <span className="text-gray-400 italic">Restricted</span>
+                    {isAdmin ? (
+                      <>
+                        <Button onClick={() => handleEdit(user)} color="secondary" variant="text">
+                          ✏️ Edit
+                        </Button>
+                        <Button onClick={() => handleDelete(user._id)} color="error" variant="text">
+                          🗑 Delete
+                        </Button>
+                      </>
+                    ) : (
+                      <span style={{ color: theme.palette.text.disabled }}>Restricted</span>
                     )}
                   </TableCell>
                 </TableRow>
               ))}
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500 p-4">
+                  <TableCell colSpan={4} align="center">
                     No users found.
                   </TableCell>
                 </TableRow>
@@ -187,14 +199,21 @@ const Users = () => {
 
       {/* Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen px-4">
           <form
             onSubmit={handleSubmit}
-            className="bg-[#1e1e2f] p-6 rounded-xl w-full max-w-md shadow-xl"
+            style={{
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              padding: 24,
+              borderRadius: 16,
+              maxWidth: 500,
+              width: "100%",
+            }}
           >
             <Grid container spacing={2}>
               <Grid size={12}>
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold">
                   {editUser ? "Edit User" : "Add User"}
                 </h2>
               </Grid>
@@ -205,8 +224,6 @@ const Users = () => {
                   fullWidth
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  InputProps={{ style: { color: "#fff" } }}
-                  InputLabelProps={{ style: { color: "#ccc" } }}
                 />
               </Grid>
 
@@ -217,8 +234,6 @@ const Users = () => {
                   fullWidth
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  InputProps={{ style: { color: "#fff" } }}
-                  InputLabelProps={{ style: { color: "#ccc" } }}
                 />
               </Grid>
 
@@ -230,8 +245,6 @@ const Users = () => {
                     fullWidth
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    InputProps={{ style: { color: "#fff" } }}
-                    InputLabelProps={{ style: { color: "#ccc" } }}
                   />
                 </Grid>
               )}
@@ -243,9 +256,6 @@ const Users = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value as string })
                   }
-                  displayEmpty
-                  variant="outlined"
-                  sx={{ color: "#fff", bgcolor: "#2c2c3e" }}
                 >
                   <MenuItem value="user">User</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>

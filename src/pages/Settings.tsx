@@ -11,6 +11,7 @@ import {
   IconButton,
   Paper,
   Grid,
+  useTheme,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
@@ -25,6 +26,7 @@ interface ProfileForm {
 }
 
 const Settings: React.FC = () => {
+  const theme = useTheme();
   const { user, updateUser } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<string | null>(
@@ -63,11 +65,7 @@ const Settings: React.FC = () => {
       setSubmitting(true);
       const response = await api.put("/users/me", fd);
       toast.success("Profile updated!");
-
-      // Update user data in context after successful update
-      if (response.data) {
-        updateUser(response.data); // Update user in context
-      }
+      if (response.data) updateUser(response.data);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Update failed");
     } finally {
@@ -83,8 +81,17 @@ const Settings: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <Paper className="bg-[#1e1e2f] p-6 text-white rounded-xl shadow-md">
-        <h1 className="text-2xl font-semibold mb-4 text-white">Profile Settings</h1>
+      <Paper
+        elevation={4}
+        style={{
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          padding: 24,
+          borderRadius: 16,
+        }}
+      >
+        <h1 className="text-2xl font-semibold mb-4">Profile Settings</h1>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <Grid container spacing={2}>
             <Grid size={12}>
@@ -92,8 +99,12 @@ const Settings: React.FC = () => {
                 label="Name"
                 fullWidth
                 {...register("name")}
-                InputLabelProps={{ style: { color: "#ccc" } }}
-                InputProps={{ style: { color: "#fff" } }}
+                InputLabelProps={{
+                  style: { color: theme.palette.text.secondary },
+                }}
+                InputProps={{
+                  style: { color: theme.palette.text.primary },
+                }}
               />
             </Grid>
 
@@ -103,8 +114,12 @@ const Settings: React.FC = () => {
                 type="email"
                 fullWidth
                 {...register("email")}
-                InputLabelProps={{ style: { color: "#ccc" } }}
-                InputProps={{ style: { color: "#fff" } }}
+                InputLabelProps={{
+                  style: { color: theme.palette.text.secondary },
+                }}
+                InputProps={{
+                  style: { color: theme.palette.text.primary },
+                }}
               />
             </Grid>
 
@@ -114,9 +129,11 @@ const Settings: React.FC = () => {
                 type={showCurrentPassword ? "text" : "password"}
                 fullWidth
                 {...register("currentPassword")}
-                InputLabelProps={{ style: { color: "#ccc" } }}
+                InputLabelProps={{
+                  style: { color: theme.palette.text.secondary },
+                }}
                 InputProps={{
-                  style: { color: "#fff" },
+                  style: { color: theme.palette.text.primary },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
@@ -134,9 +151,11 @@ const Settings: React.FC = () => {
                 type={showNewPassword ? "text" : "password"}
                 fullWidth
                 {...register("newPassword")}
-                InputLabelProps={{ style: { color: "#ccc" } }}
+                InputLabelProps={{
+                  style: { color: theme.palette.text.secondary },
+                }}
                 InputProps={{
-                  style: { color: "#fff" },
+                  style: { color: theme.palette.text.primary },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setNewShowPassword(!showNewPassword)}>
@@ -162,13 +181,6 @@ const Settings: React.FC = () => {
                     setPreview(URL.createObjectURL(file));
                   }
                 }}
-                InputProps={{
-                  classes: {
-                    root: "bg-[#1e1e2f]",
-                    input:
-                      "text-white file:text-white file:bg-[#2c2c3d] file:border-0 file:rounded file:mr-2 file:py-1 file:px-3",
-                  },
-                }}
               />
             </Grid>
 
@@ -178,7 +190,8 @@ const Settings: React.FC = () => {
                   <img
                     src={preview}
                     alt="Avatar Preview"
-                    className="w-24 h-24 rounded-full border border-white object-cover"
+                    className="w-24 h-24 rounded-full border object-cover"
+                    style={{ borderColor: theme.palette.divider }}
                   />
                 </div>
               </Grid>
@@ -189,8 +202,8 @@ const Settings: React.FC = () => {
                 type="submit"
                 fullWidth
                 variant="contained"
+                color="primary"
                 disabled={submitting}
-                className="!bg-[#1e1e2f] !text-white hover:!bg-[#2a2a3d] transition-colors font-medium py-3"
               >
                 {submitting ? "Saving..." : "Save Changes"}
               </Button>

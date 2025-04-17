@@ -4,16 +4,14 @@ import App from "./App";
 import 'react-toastify/dist/ReactToastify.css';
 import "./index.css";
 import { AuthProvider } from "./context/AuthContext";
-import { CssBaseline, ThemeProvider } from '@mui/material';
-import theme from './theme';
+import { ThemeContextProvider } from "./context/ThemeContext";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-    <CssBaseline />
+      <ThemeContextProvider>
      <AuthProvider>
       <App />
     </AuthProvider>
-    </ThemeProvider>
+    </ThemeContextProvider>
   </React.StrictMode>
 );

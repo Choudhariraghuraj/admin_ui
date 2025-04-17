@@ -15,10 +15,10 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../api";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { styled } from "@mui/system";
+import { styled, useTheme } from "@mui/material/styles";
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
-  color: theme.palette.common.white,
+  color: theme.palette.text.primary,
   "&:hover": {
     backgroundColor: "transparent",
   },
@@ -31,6 +31,7 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
 }));
 
 const Register = () => {
+  const theme = useTheme();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,7 +73,7 @@ const Register = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Account created successfully! Please log in.");
-      navigate("/login"); //
+      navigate("/login");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -84,19 +85,29 @@ const Register = () => {
 
   return (
     <Container maxWidth="sm" className="mt-20">
-      <Paper elevation={6} className="bg-[#1e1e2f] text-white p-6 rounded-2xl shadow-lg">
-        <Typography variant="h5" align="center" fontWeight={600}>
+      <Paper
+        elevation={6}
+        sx={{
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          p: 6,
+          borderRadius: 4,
+          boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+        }}
+      >
+        <Typography variant="h5" align="center" fontWeight={600} sx={{ color: theme.palette.text.primary }}>
           Create New Account
         </Typography>
 
-        <Box component="form" onSubmit={handleRegister} className="mt-6 flex flex-col gap-5">
+        <Box component="form" onSubmit={handleRegister} sx={{ mt: 6, display: "flex", flexDirection: "column", gap: 2.5 }}>
           <TextField
             label="Name"
             fullWidth
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            sx={{ input: { color: "#fff" }, "& .MuiInputLabel-root": { color: "#ccc" } }}
+            InputLabelProps={{ sx: { color: theme.palette.text.secondary } }}
+            InputProps={{ sx: { color: theme.palette.text.primary } }}
           />
 
           <TextField
@@ -106,7 +117,8 @@ const Register = () => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            sx={{ input: { color: "#fff" }, "& .MuiInputLabel-root": { color: "#ccc" } }}
+            InputLabelProps={{ sx: { color: theme.palette.text.secondary } }}
+            InputProps={{ sx: { color: theme.palette.text.primary } }}
           />
 
           <TextField
@@ -116,8 +128,9 @@ const Register = () => {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            sx={{ input: { color: "#fff" }, "& .MuiInputLabel-root": { color: "#ccc" } }}
+            InputLabelProps={{ sx: { color: theme.palette.text.secondary } }}
             InputProps={{
+              sx: { color: theme.palette.text.primary },
               endAdornment: (
                 <InputAdornment position="end">
                   <StyledIconButton onClick={handleClickShowPassword} edge="end">
@@ -135,8 +148,9 @@ const Register = () => {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            sx={{ input: { color: "#fff" }, "& .MuiInputLabel-root": { color: "#ccc" } }}
+            InputLabelProps={{ sx: { color: theme.palette.text.secondary } }}
             InputProps={{
+              sx: { color: theme.palette.text.primary },
               endAdornment: (
                 <InputAdornment position="end">
                   <StyledIconButton onClick={handleClickShowPassword} edge="end">
@@ -154,11 +168,11 @@ const Register = () => {
               const file = (e.target as HTMLInputElement).files?.[0];
               setAvatar(file ?? null);
             }}
-            sx={{ input: { color: "#ccc" }, "& .MuiInputLabel-root": { color: "#ccc" } }}
+            InputLabelProps={{ shrink: true, sx: { color: theme.palette.text.secondary } }}
             InputProps={{
               inputProps: { accept: "image/*" },
+              sx: { color: theme.palette.text.secondary },
             }}
-            InputLabelProps={{ shrink: true }}
           />
 
           <Button
@@ -167,19 +181,23 @@ const Register = () => {
             color="primary"
             fullWidth
             disabled={loading}
-            className="!py-3 font-bold text-white"
+            sx={{
+              py: 1.5,
+              fontWeight: "bold",
+              color: theme.palette.primary.contrastText,
+              backgroundColor: theme.palette.primary.main,
+            }}
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
           >
             {loading ? "Registering..." : "Register"}
           </Button>
 
-          <Typography variant="body2" align="center" className="text-gray-400 mt-2">
+          <Typography variant="body2" align="center" sx={{ color: theme.palette.text.secondary, mt: 1 }}>
             Already have an account?{" "}
             <Link
               component={RouterLink}
               to="/login"
               underline="hover"
-              className="text-blue-400 hover:text-blue-300 font-medium"
             >
               Login
             </Link>

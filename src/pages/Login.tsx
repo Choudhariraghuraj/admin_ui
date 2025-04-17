@@ -11,6 +11,7 @@ import {
   Checkbox,
   InputAdornment,
   IconButton,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -18,16 +19,9 @@ import { toast } from "react-toastify";
 import api from "../api";
 import { useAuth } from "../context/AuthContext";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { styled } from "@mui/system";
-
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
-  color: theme.palette.common.white,
-  "&:hover": {
-    backgroundColor: "transparent",
-  },
-}));
 
 const Login = () => {
+  const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -36,14 +30,11 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // 🔁 Prefill if remember me data exists
   useEffect(() => {
     const remembered = localStorage.getItem("remember") === "true";
     if (remembered) {
-      const storedEmail = localStorage.getItem("rememberEmail") || "";
-      const storedPassword = localStorage.getItem("rememberPassword") || "";
-      setEmail(storedEmail);
-      setPassword(storedPassword);
+      setEmail(localStorage.getItem("rememberEmail") || "");
+      setPassword(localStorage.getItem("rememberPassword") || "");
       setRemember(true);
     }
   }, []);
@@ -76,16 +67,22 @@ const Login = () => {
     }
   };
 
-  const handleClickShowPassword = () => setShowPassword((prev) => !prev);
-
   return (
-    <Container maxWidth="sm" className="mt-20">
-      <Paper elevation={6} className="bg-[#1e1e2f] text-white p-6 rounded-2xl shadow-lg">
+    <Container maxWidth="sm" sx={{ mt: 10 }}>
+      <Paper
+        elevation={6}
+        sx={{
+          p: 6,
+          borderRadius: 3,
+          bgcolor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+        }}
+      >
         <Typography variant="h5" align="center" fontWeight={600}>
           Login to Your Account
         </Typography>
 
-        <Box component="form" onSubmit={handleLogin} className="mt-6 flex flex-col gap-5">
+        <Box component="form" onSubmit={handleLogin} sx={{ mt: 4, display: "flex", flexDirection: "column", gap: 3 }}>
           <TextField
             label="Email"
             type="email"
@@ -93,8 +90,6 @@ const Login = () => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            InputLabelProps={{ style: { color: "#ccc" } }}
-            InputProps={{ style: { color: "#fff" } }}
           />
 
           <TextField
@@ -104,37 +99,29 @@ const Login = () => {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            InputLabelProps={{ style: { color: "#ccc" } }}
             InputProps={{
-              style: { color: "#fff" },
               endAdornment: (
                 <InputAdornment position="end">
-                  <StyledIconButton onClick={handleClickShowPassword} edge="end">
+                  <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </StyledIconButton>
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
           />
 
-          <Box className="flex justify-between items-center">
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <FormControlLabel
-              control={
-                <Checkbox
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  sx={{ color: "#ccc" }}
-                />
-              }
+              control={<Checkbox checked={remember} onChange={(e) => setRemember(e.target.checked)} />}
               label="Remember me"
-              sx={{ color: "#ccc" }}
             />
 
             <Link
               component={RouterLink}
               to="/forgot-password"
               underline="hover"
-              className="text-blue-400 hover:text-blue-300 text-sm"
+              variant="body2"
+              color="primary"
             >
               Forgot Password?
             </Link>
@@ -143,23 +130,17 @@ const Login = () => {
           <Button
             type="submit"
             variant="contained"
-            color="primary"
             fullWidth
             disabled={loading}
-            className="!py-3 font-bold text-white"
+            sx={{ py: 1.5, fontWeight: "bold" }}
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
           >
             {loading ? "Logging in..." : "Login"}
           </Button>
 
-          <Typography variant="body2" align="center" className="text-gray-400 mt-2">
+          <Typography variant="body2" align="center" sx={{ mt: 1 }}>
             Don’t have an account?{" "}
-            <Link
-              component={RouterLink}
-              to="/register"
-              underline="hover"
-              className="text-blue-400 hover:text-blue-300 font-medium"
-            >
+            <Link component={RouterLink} to="/register" underline="hover" color="primary" fontWeight="medium">
               Register
             </Link>
           </Typography>

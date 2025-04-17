@@ -47,8 +47,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       sx={{
         "& .MuiDrawer-paper": {
           width: 240,
-          backgroundColor: "#1e1e2f",
-          color: "#fff",
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          borderRight: `1px solid ${theme.palette.divider}`,
         },
       }}
     >
@@ -61,12 +62,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               selected={location.pathname === item.path}
               sx={{
                 "&.Mui-selected": {
-                  backgroundColor: "#4c4c70",
+                  backgroundColor: theme.palette.action.selected,
                   borderRadius: 2,
+                },
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
                 },
               }}
             >
-              <ListItemIcon sx={{ color: "inherit" }}>{item.icon}</ListItemIcon>
+              <ListItemIcon sx={{ color: theme.palette.text.primary }}>
+                {item.icon}
+              </ListItemIcon>
               <ListItemText primary={item.label} />
             </ListItemButton>
           ))}
@@ -76,9 +82,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               localStorage.removeItem("token");
               navigate("/login");
             }}
-            sx={{ mt: "auto", color: "#f44336" }}
+            sx={{
+              mt: 2,
+              color: theme.palette.error.main,
+              "&:hover": {
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
           >
-            <ListItemIcon sx={{ color: "inherit" }}><Logout /></ListItemIcon>
+            <ListItemIcon sx={{ color: theme.palette.error.main }}>
+              <Logout />
+            </ListItemIcon>
             <ListItemText primary="Logout" />
           </ListItemButton>
         </List>
