@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Avatar,
   Button,
@@ -16,11 +16,14 @@ import {
   TextField,
   useTheme,
   Paper,
+  Pagination,
+  InputAdornment,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import API from "../api";
 import { getAvatarUrl } from "../utils/avatarUrl";
 import { useAuth } from "../context/AuthContext";
+import SearchIcon from "@mui/icons-material/Search";
 
 interface User {
   _id: string;
@@ -31,14 +34,17 @@ interface User {
 }
 
 const Users = () => {
+  const pageLimit = 5;
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const theme = useTheme();
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -47,11 +53,20 @@ const Users = () => {
     avatar: null as File | null,
   });
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+
+  // 🧠 Memoized query parameters to reduce full component re-renders
+  const queryParams = useMemo(() => ({ page, search, role: roleFilter, limit: pageLimit }), [page, search, roleFilter]);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/users");
+      const res = await API.get("/users", { params: queryParams });
       setUsers(res.data.users);
+      setTotalPages(res.data.totalPages);
     } catch {
       toast.error("Failed to load users");
     } finally {
@@ -61,7 +76,7 @@ const Users = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [queryParams]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure to delete this user?")) return;
@@ -121,40 +136,82 @@ const Users = () => {
         padding: "24px",
       }}
     >
-      <div className="flex justify-between items-center mb-6">
+      {/* 🔍 Filters and Add */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">👥 User Management</h1>
-        {isAdmin && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              setEditUser(null);
-              setFormData({ name: "", email: "", password: "", role: "user", avatar: null });
-              setModalOpen(true);
+
+        <div className="flex gap-2 flex-wrap">
+          <TextField
+            size="small"
+            placeholder="Search name/email"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Select
+            size="small"
+            value={roleFilter}
+            displayEmpty
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setPage(1);
             }}
           >
-            ➕ Add User
-          </Button>
-        )}
+            <MenuItem value="">All Roles</MenuItem>
+            <MenuItem value="admin">Admin</MenuItem>
+            <MenuItem value="user">User</MenuItem>
+          </Select>
+
+          {isAdmin && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setEditUser(null);
+                setFormData({ name: "", email: "", password: "", role: "user", avatar: null });
+                setModalOpen(true);
+              }}
+            >
+              ➕ Add User
+            </Button>
+          )}
+        </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center h-32">
-          <CircularProgress color="primary" />
-        </div>
-      ) : (
-        <TableContainer component={Paper} elevation={4}>
-          <Table>
-            <TableHead>
+      {/* 📋 User Table */}
+      <TableContainer
+        component={Paper}
+        elevation={4}
+        key={`${page}-${search}-${roleFilter}`}
+      >
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell colSpan={4} align="center">
+                  <CircularProgress color="primary" />
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((user) => (
+            ) : (
+              users.map((user) => (
                 <TableRow key={user._id} hover>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -184,20 +241,30 @@ const Users = () => {
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
-              {users.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    No users found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              ))
+            )}
+            {users.length === 0 && !loading && (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  No users found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      {/* Modal */}
+      {/* 📄 Pagination */}
+      <div className="flex justify-center mt-4">
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(_, value) => setPage(value)}
+          color="primary"
+        />
+      </div>
+
+      {/* 🧾 Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <div className="flex justify-center items-center min-h-screen px-4">
           <form
@@ -213,11 +280,8 @@ const Users = () => {
           >
             <Grid container spacing={2}>
               <Grid size={12}>
-                <h2 className="text-lg font-semibold">
-                  {editUser ? "Edit User" : "Add User"}
-                </h2>
+                <h2 className="text-lg font-semibold">{editUser ? "Edit User" : "Add User"}</h2>
               </Grid>
-
               <Grid size={12}>
                 <TextField
                   label="Name"
@@ -226,7 +290,6 @@ const Users = () => {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </Grid>
-
               <Grid size={12}>
                 <TextField
                   label="Email"
@@ -236,7 +299,6 @@ const Users = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </Grid>
-
               {!editUser && (
                 <Grid size={12}>
                   <TextField
@@ -248,20 +310,16 @@ const Users = () => {
                   />
                 </Grid>
               )}
-
               <Grid size={12}>
                 <Select
                   fullWidth
                   value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value as string })
-                  }
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 >
                   <MenuItem value="user">User</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>
                 </Select>
               </Grid>
-
               <Grid size={12}>
                 <TextField
                   type="file"
@@ -274,7 +332,6 @@ const Users = () => {
                   }}
                 />
               </Grid>
-
               <Grid size={12} className="flex justify-end gap-4">
                 <Button variant="outlined" color="error" onClick={() => setModalOpen(false)}>
                   Cancel
