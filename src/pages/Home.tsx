@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { Paper, Grid, Typography, Avatar, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useTheme } from '@mui/material/styles';
+import { getAvatarUrl } from "../utils/avatarUrl";
 
 interface OverviewData {
   totalUsers: number;
@@ -105,12 +106,13 @@ const Home: React.FC = () => {
                             <Avatar
                               src={
                                 u.avatar
-                                  ? import.meta.env.VITE_API_BASE_URL + u.avatar
-                                  : "/default-avatar.png"
+                                  ? getAvatarUrl(u.avatar) : ""
                               }
                               alt={u.name}
                               sx={{ width: 32, height: 32 }}
-                            />
+                              >
+                              {!u.avatar && u.name.charAt(0).toUpperCase()}
+                              </Avatar>
                           </TableCell>
                           <TableCell style={{ color: theme.palette.text.primary }}>{u.name}</TableCell>
                           <TableCell style={{ color: theme.palette.text.primary }}>{u.email}</TableCell>
@@ -135,12 +137,13 @@ const Home: React.FC = () => {
                   <Avatar
                     src={
                       data.currentUser.avatar
-                        ? import.meta.env.VITE_API_BASE_URL + data.currentUser.avatar
-                        : "/default-avatar.png"
+                        ? getAvatarUrl(data.currentUser.avatar) : ""
                     }
                     alt={data.currentUser.name}
                     sx={{ width: 60, height: 60 }}
-                  />
+                  >
+                     {!data.currentUser.avatar && data.currentUser.name.charAt(0).toUpperCase()}
+                     </Avatar>
                   <div>
                     <Typography style={{ color: theme.palette.text.primary }} className="text-lg">
                       {data.currentUser.name}
